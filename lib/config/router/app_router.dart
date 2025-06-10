@@ -10,6 +10,14 @@ final appRouter = GoRouter(
       builder: (context, state) {
         return LoginScreen();
       },
+
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) {
+        return HomeScreen();
+      },
+
     ),
   ],
 );
