@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:facelock/presentation/views/home/home_screens.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -32,59 +31,92 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const ScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
+          setState(() => currentPageIndex = index);
         },
         children: _pages,
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
+      bottomNavigationBar: _buildBottomNavBar(context),
     );
   }
 
-  Widget _buildBottomNavBar() {
+  Widget _buildBottomNavBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return NavigationBar(
+      height: 65,
+      backgroundColor: colors.surface.withOpacity(0.95),
+      indicatorColor: colors.primary.withOpacity(0.1),
+      selectedIndex: currentPageIndex,
+      animationDuration: const Duration(milliseconds: 300),
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       onDestinationSelected: (int index) {
         setState(() {
           currentPageIndex = index;
           _pageController.jumpToPage(index);
         });
       },
-      backgroundColor: Colors.white,
-      indicatorColor: Colors.deepPurple.withOpacity(0.2),
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      selectedIndex: currentPageIndex,
-      animationDuration: const Duration(milliseconds: 800),
-      destinations: const [
-        NavigationDestination(
-          selectedIcon: Icon(PhosphorIconsBold.house, color: Colors.deepPurple),
-          icon: Icon(PhosphorIconsRegular.house, color: Colors.grey),
+      destinations: [
+        _buildNavDestination(
+          icon: PhosphorIconsBold.house,
+          selectedIcon: PhosphorIconsFill.house,
           label: 'Inicio',
+          colors: colors,
         ),
-        NavigationDestination(
-          selectedIcon: Icon(PhosphorIconsBold.heart, color: Colors.deepPurple),
-          icon: Badge(
-            smallSize: 8,
-            child: Icon(PhosphorIconsRegular.heart, color: Colors.grey),
-          ),
+        _buildNavDestination(
+          icon: PhosphorIconsBold.heart,
+          selectedIcon: PhosphorIconsFill.heart,
           label: 'Favoritos',
+          colors: colors,
+          badge: true,
         ),
-        NavigationDestination(
-          selectedIcon: Icon(PhosphorIconsBold.shoppingCartSimple, color: Colors.deepPurple),
-          icon: Badge(
-            label: Text('2'),
-            child: Icon(PhosphorIconsRegular.shoppingCartSimple, color: Colors.grey),
-          ),
+        _buildNavDestination(
+          icon: PhosphorIconsBold.shoppingCartSimple,
+          selectedIcon: PhosphorIconsFill.shoppingCartSimple,
           label: 'Carrito',
+          colors: colors,
+          badgeCount: 2,
         ),
-        NavigationDestination(
-          selectedIcon: Icon(PhosphorIconsBold.user, color: Colors.deepPurple),
-          icon: Icon(PhosphorIconsRegular.user, color: Colors.grey),
+        _buildNavDestination(
+          icon: PhosphorIconsBold.user,
+          selectedIcon: PhosphorIconsFill.user,
           label: 'Perfil',
+          colors: colors,
         ),
       ],
+    );
+  }
+
+  NavigationDestination _buildNavDestination({
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+    required ColorScheme colors,
+    bool badge = false,
+    int? badgeCount,
+  }) {
+    final inactiveColor = colors.onSurface.withOpacity(0.5);
+    final activeColor = colors.primary;
+
+    return NavigationDestination(
+      selectedIcon: Icon(selectedIcon, color: activeColor, size: 24),
+      icon: badgeCount != null
+          ? Badge(
+              label: Text(badgeCount.toString()),
+              backgroundColor: colors.error,
+              textColor: colors.onError,
+              child: Icon(icon, color: inactiveColor, size: 24),
+            )
+          : badge
+              ? Badge(
+                  smallSize: 0,
+                  backgroundColor: activeColor,
+                  child: Icon(icon, color: inactiveColor, size: 24),
+                )
+              : Icon(icon, color: inactiveColor, size: 24),
+      label: label,
     );
   }
 }
