@@ -13,6 +13,7 @@ class AppTheme {
           backgroundColor: Color(0xFFF8F5FA),
           foregroundColor: Color(0xFF0D3B3B),
           elevation: 0,
+          
         ),
         iconTheme: const IconThemeData(color: Color(0xFF0D3B3B)),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(

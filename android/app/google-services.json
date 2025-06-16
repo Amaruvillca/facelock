@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "259048616873",
+    "project_id": "faceapp-92c42",
+    "storage_bucket": "faceapp-92c42.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259048616873:android:a6c573e76e2450ee180ab8",
+        "android_client_info": {
+          "package_name": "com.example.facelock"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "259048616873-5hfi52ag3qf2u59nf3ljufv6m8jsdho1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.facelock",
+            "certificate_hash": "7ab7667322443f6d6dc787b317e8658b48a7fb9a"
+          }
+        },
+        {
+          "client_id": "259048616873-16l821k9u2dp1jas4sih6eodevddnuru.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfv7c-QFFnKgOHaW6aIKQ1oVSIFMZDZb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "259048616873-16l821k9u2dp1jas4sih6eodevddnuru.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "259048616873-6pv1rcugta0jl2v602ag1cgcaia3cen0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.facelock"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

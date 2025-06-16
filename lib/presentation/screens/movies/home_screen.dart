@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
+        physics: const ScrollPhysics(),
         onPageChanged: (int index) {
           setState(() => currentPageIndex = index);
         },
