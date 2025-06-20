@@ -11,7 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int currentPageIndex = 0;
-  final PageController _pageController = PageController();
+ final PageController _pageController = PageController(initialPage: 0);
 
   final List<Widget> _pages = const [
     HomeView(),

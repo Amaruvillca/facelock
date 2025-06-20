@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:facelock/config/constants/enviroment.dart';
 import 'package:facelock/domain/entities/producto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:go_router/go_router.dart';
 
 class CardProducto extends StatelessWidget {
   const CardProducto({super.key, required this.producto});
@@ -11,8 +13,8 @@ class CardProducto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        print("${producto.idProducto}");
+      onTap: () {
+        context.push('/home/detalleproducto/${producto.idProducto}');
       },
       child: Container(
         width: 155,
@@ -20,7 +22,11 @@ class CardProducto extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           color: Colors.white,
           boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 2)),
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 2),
+            ),
           ],
         ),
         padding: const EdgeInsets.all(0),
@@ -41,17 +47,21 @@ class CardProducto extends StatelessWidget {
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
                 ),
-                child: FadeInImage(
-                  placeholder: AssetImage('assets/gif3.gif'), // Placeholder mientras carga
-                  image: NetworkImage('${Environment.urlBase}/img/productos/${producto.imagen}' ),
+                child: CachedNetworkImage(
+                  imageUrl:
+                      '${Environment.urlBase}/img/productos/${producto.imagen}',
                   fit: BoxFit.cover,
-                  imageErrorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[200],
-                      child: Icon(Icons.broken_image, color: Colors.grey[400]),
-                    );
-                  },
-                  fadeInDuration: Duration(milliseconds: 300),
+                  placeholder:
+                      (context, url) =>
+                          Image.asset('assets/gif3.gif', fit: BoxFit.cover),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        color: Colors.grey[200],
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.grey[400],
+                        ),
+                      ),
                 ),
               ),
             ),
@@ -74,7 +84,9 @@ class CardProducto extends StatelessWidget {
                     children: [
                       RatingBarIndicator(
                         rating: producto.promedioCalificacion,
-                        itemBuilder: (context, index) => const Icon(Icons.star, color: Colors.amber),
+                        itemBuilder:
+                            (context, index) =>
+                                const Icon(Icons.star, color: Colors.amber),
                         itemCount: 5,
                         itemSize: 16.0,
                         direction: Axis.horizontal,

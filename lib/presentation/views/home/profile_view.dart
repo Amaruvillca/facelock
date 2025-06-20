@@ -11,23 +11,16 @@ class ProfileView extends StatelessWidget {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     
     try {
-      // Mostrar indicador de carga
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Cerrar sesión en Google primero si estaba usando Google Sign-In
       await GoogleSignIn().signOut();
-      
-      // Cerrar sesión en Firebase
       await FirebaseAuth.instance.signOut();
       
-      // Cerrar el diálogo de carga
       if (context.mounted) Navigator.of(context).pop();
-      
-      // Navegar a la pantalla de login usando GoRouter
       if (context.mounted) context.go('/');
     } catch (e) {
       if (context.mounted) Navigator.of(context).pop();
@@ -43,7 +36,6 @@ class ProfileView extends StatelessWidget {
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    // Mostrar diálogo de confirmación
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -71,20 +63,15 @@ class ProfileView extends StatelessWidget {
     if (confirmed != true) return;
 
     try {
-      // Mostrar indicador de carga
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Eliminar la cuenta del usuario
       await user.delete();
       
-      // Cerrar el diálogo de carga
       if (context.mounted) Navigator.of(context).pop();
-      
-      // Navegar a la pantalla de login usando GoRouter
       if (context.mounted) context.go('/login');
       
       scaffoldMessenger.showSnackBar(
@@ -96,11 +83,8 @@ class ProfileView extends StatelessWidget {
         SnackBar(content: Text('Error al eliminar cuenta: ${e.message}')),
       );
       
-      // Si el error es que necesita reautenticación
-      if (e.code == 'requires-recent-login') {
-        if (context.mounted) {
-          await _showReauthenticationDialog(context);
-        }
+      if (e.code == 'requires-recent-login' && context.mounted) {
+        await _showReauthenticationDialog(context);
       }
     } catch (e) {
       if (context.mounted) Navigator.of(context).pop();
@@ -151,7 +135,6 @@ class ProfileView extends StatelessWidget {
                   
                   await user.reauthenticateWithCredential(cred);
                   Navigator.of(context).pop();
-                  // Volver a intentar eliminar la cuenta
                   await _deleteAccount(context);
                 }
               } catch (e) {
@@ -183,82 +166,153 @@ class ProfileView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Mi Perfil'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.gear),
-            onPressed: () => context.push('/profile/settings'),
-          ),
-        ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Center(
+            // Sección de información del usuario
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: photoUrl != null
+                              ? NetworkImage(photoUrl)
+                              : const NetworkImage(
+                                  'https://media.istockphoto.com/id/155068180/es/foto/guy-real.jpg',
+                                ) as ImageProvider,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            provider == 'google' 
+                                ? PhosphorIconsBold.googleLogo 
+                                : PhosphorIconsBold.envelope,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      displayName,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      email,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.push('/profile/edit'),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                      child: const Text('Editar Perfil'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Sección de opciones
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: photoUrl != null
-                        ? NetworkImage(photoUrl)
-                        : const NetworkImage(
-                            'https://media.istockphoto.com/id/155068180/es/foto/guy-real.jpg',
-                          ) as ImageProvider,
+                  ListTile(
+                    leading: const Icon(PhosphorIconsRegular.lock, color: Colors.deepPurple),
+                    title: const Text('Cambiar Contraseña'),
+                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 18),
+                    onTap: () => context.push('/profile/change-password'),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    displayName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(PhosphorIconsRegular.scanSmiley, color: Colors.deepPurple),
+                    title: const Text('Registro Biométrico'),
+                    subtitle: const Text('Configura tu Reconocimiento facial'),
+                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 18),
+                    onTap: () => context.push('/home/profile'),
                   ),
-                  const SizedBox(height: 10),
-                  Text(email),
-                  const SizedBox(height: 8),
-                  Chip(
-                    label: Text(
-                      provider == 'google' ? 'Google' : 'Email/Contraseña',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    backgroundColor: Colors.deepPurple.withOpacity(0.1),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(PhosphorIconsRegular.shield, color: Colors.deepPurple),
+                    title: const Text('Privacidad y Seguridad'),
+                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 18),
+                    onTap: () => context.push('/profile/privacy'),
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(PhosphorIconsRegular.storefront, color: Colors.deepPurple),
+                    title: const Text('Sucursales'),
+                    subtitle: const Text('Encuentra nuestras sucursales cercanas'),
+                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 18),
+                    onTap: () => context.push('/home/mapa'),
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(PhosphorIconsRegular.clockUser, color: Colors.deepPurple),
+                    title: const Text('Historial de compras'),
+                    subtitle: const Text('Consulta tus compras realizadas'),
+                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 18),
+                    onTap: () => context.push('/profile/branches'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-            Expanded(
-              child: ListView(
+
+            const SizedBox(height: 24),
+
+            // Sección de acciones importantes
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(PhosphorIconsRegular.user),
-                    title: const Text('Editar Perfil'),
-                    trailing: const Icon(PhosphorIconsRegular.caretRight),
-                    onTap: () => context.push('/profile/edit'),
-                  ),
-                  ListTile(
-                    leading: const Icon(PhosphorIconsRegular.lock),
-                    title: const Text('Cambiar Contraseña'),
-                    trailing: const Icon(PhosphorIconsRegular.caretRight),
-                    onTap: () => context.push('/profile/change-password'),
-                  ),
-                  ListTile(
-                    leading: const Icon(PhosphorIconsRegular.shield),
-                    title: const Text('Privacidad y Seguridad'),
-                    trailing: const Icon(PhosphorIconsRegular.caretRight),
-                    onTap: () => context.push('/profile/privacy'),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    leading: const Icon(PhosphorIconsRegular.signOut),
+                    leading: Icon(PhosphorIconsRegular.signOut, color: Colors.blue[700]),
                     title: const Text('Cerrar Sesión'),
                     onTap: () => _signOut(context),
                   ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
                   ListTile(
-                    leading: Icon(
-                      PhosphorIconsRegular.trash,
-                      color: Colors.red[400],
-                    ),
+                    leading: Icon(PhosphorIconsRegular.trash, color: Colors.red[400]),
                     title: Text(
                       'Eliminar Cuenta',
                       style: TextStyle(color: Colors.red[400]),

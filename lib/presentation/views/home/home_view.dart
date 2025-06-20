@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:facelock/domain/entities/producto.dart';
 import 'package:facelock/presentation/provider/providers.dart';
 import 'package:flutter/material.dart';
@@ -112,15 +111,15 @@ class HomeViewState extends ConsumerState<HomeView> with AutomaticKeepAliveClien
               const SizedBox(height: 20),
               _HorizontalBanner(),
               _SectionTitle('Categorías'),
-              const CategoryList(),
+              CategoryList(),
               _SectionTitle('Nuevas llegadas'),
-              ProductoHorizontalList(productos: recientePro, scrol: "recientes"),
+             ProductoHorizontalList(productos: recientePro, scrol: "recientes"),
               _SectionTitle('Tendencias'),
-              ProductoHorizontalList(productos: mejorCali, scrol: "tedencias"),
+             ProductoHorizontalList(productos: mejorCali, scrol: "tedencias"),
               _SectionTitle('Anuncios'),
-              const LuxuryFashionSlider(),
+             //LuxuryFashionSlider(),
               _SectionTitle('Más Productos'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -158,11 +157,10 @@ class _ProductGrid extends ConsumerWidget {
           childAspectRatio: 0.6,
         ),
         delegate: SliverChildBuilderDelegate(
+          
           (context, index) {
             final producto = productos[index];
-            return FadeInUp(
-              child: CardVertical(producto: producto),
-            );
+            return CardVertical(producto: producto);
           },
           childCount: productos.length,
         ),

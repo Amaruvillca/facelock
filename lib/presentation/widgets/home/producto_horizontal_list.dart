@@ -71,6 +71,7 @@ class _ProductoHorizontalListState extends State<ProductoHorizontalList> {
 
   Widget _buildProductList() {
     return ListView.separated(
+      addAutomaticKeepAlives: true,
       key: PageStorageKey(widget.scrol),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       scrollDirection: Axis.horizontal,

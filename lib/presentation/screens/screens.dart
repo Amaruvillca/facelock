@@ -3,3 +3,7 @@ export 'movies/home_screen.dart';
 export 'movies/register_screen.dart';
 export 'movies/search_results_screen.dart';
 export 'movies/welcome_screen.dart';
+export 'movies/detalle_producto_screen.dart';
+export 'perfil/registro_biometrico.dart';
+export 'sucursales/map_screen.dart';
+export 'perfil/registrar_biometria.dart';

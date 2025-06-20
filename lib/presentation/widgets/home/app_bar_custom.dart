@@ -2,37 +2,62 @@ import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:facelock/config/constants/enviroment.dart';
 import 'package:facelock/domain/entities/producto.dart';
+import 'package:facelock/presentation/delegates/search_producto.dart';
+import 'package:facelock/presentation/provider/providers.dart';
+import 'package:facelock/presentation/provider/search/busqueda_producto_provider.dart';
 import 'package:facelock/presentation/widgets/home/producto_vertial_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:dio/dio.dart';
 
-class AppbarCustom extends StatelessWidget {
+
+
+
+class AppbarCustom extends ConsumerWidget {
   const AppbarCustom({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,WidgetRef ref) {
     return Row(
       children: [
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: TextField(
+              readOnly: true,
+              onTap: () {
+                  final productoRepositori = ref.read(productoREpositorioProvider);
+                  final busqueda = ref.read(seachQueryProductoPrivider);
+                  final productoListas = ref.read(guardarListaDeBusqueda);
+                  final historialBusqueda = ref.read(historialDeBusqueda);
+                
+                
+                showSearch(context: context, delegate: SearchProducto(
+                  searchproducto: productoRepositori.getSearchProducto,
+                  productoList: productoListas,
+                  ref: ref,
+                  historial: historialBusqueda
+                ),query: busqueda);
+              },
               decoration: InputDecoration(
                 hintText: 'Buscar productos...',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
                   icon: const Icon(PhosphorIconsRegular.camera),
-                  onPressed: () => _showImageSourceDialog(context),
+                  onPressed:
+                      () => _showImageSourceDialog(
+                        context,
+                      ), // ✅ Esto ahora funcionará
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(
-                    color: const Color.fromARGB(255, 104, 103, 103),
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(255, 104, 103, 103),
                   ),
                 ),
               ),
@@ -40,9 +65,18 @@ class AppbarCustom extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        _NotificationButton(),
+
+        _IconsButonsCustom(
+          icon: PhosphorIconsRegular.package,
+          onTap: () {},
+          cantidad: 5,
+        ),
         const SizedBox(width: 10),
-        _LocationButton(),
+        _IconsButonsCustom(
+          icon: PhosphorIconsRegular.bell,
+          onTap: () {},
+          cantidad: 3,
+        ),
       ],
     );
   }
@@ -51,20 +85,21 @@ class AppbarCustom extends StatelessWidget {
     try {
       final result = await showDialog<ImageSource>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Buscar por imagen'),
-          content: const Text('Selecciona el origen de la imagen'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, ImageSource.camera),
-              child: const Text('Cámara'),
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Buscar por imagen'),
+              content: const Text('Selecciona el origen de la imagen'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, ImageSource.camera),
+                  child: const Text('Cámara'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, ImageSource.gallery),
+                  child: const Text('Galería'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, ImageSource.gallery),
-              child: const Text('Galería'),
-            ),
-          ],
-        ),
       );
 
       if (result != null && context.mounted) {
@@ -74,21 +109,24 @@ class AppbarCustom extends StatelessWidget {
           maxHeight: 1200,
           imageQuality: 85,
         );
-        
+
         if (pickedFile != null && context.mounted) {
           await _showImagePreviewBottomSheet(context, pickedFile.path);
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     }
   }
 
-  Future<void> _showImagePreviewBottomSheet(BuildContext context, String imagePath) async {
+  Future<void> _showImagePreviewBottomSheet(
+    BuildContext context,
+    String imagePath,
+  ) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -159,7 +197,7 @@ class _ImageSearchResultsState extends State<ImageSearchResults> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Container(
       height: screenHeight * 0.9,
       decoration: BoxDecoration(
@@ -212,22 +250,27 @@ class _ImageSearchResultsState extends State<ImageSearchResults> {
             itemBuilder: (context, index) {
               final productData = products[index];
               final producto = Producto(
-              idProducto: productData['id_producto'] ?? 0,
-              nombre: productData['nombre'] ?? 'Sin nombre',
-              descripcion: productData['descripcion'] ?? 'Sin descripción',
-              imagen: productData['imagen'] ?? '',
-              fechaCreacion: DateTime.parse(productData['fecha'] ?? DateTime.now().toString()),
-              genero: productData['genero'] ?? 'Unisex',
-              precio: (productData['precio'] as num?)?.toDouble() ?? 0.0,
-              para: productData['para'] ?? 'General',
-              idSucursal: productData['id_sucursal'] ?? 0,
-              idCategoria: productData['id_categoria'] ?? 0,
-              bannerProducto: productData['banner'] ?? '',
-              promedioCalificacion: (productData['promedio_calificacion'] as num?)?.toDouble() ?? 0.0,
-            );
-             //return _buildProductCard(products[index]);
-             return FadeIn(child: CardVertical(producto: producto));
-            } 
+                idProducto: productData['id_producto'] ?? 0,
+                nombre: productData['nombre'] ?? 'Sin nombre',
+                descripcion: productData['descripcion'] ?? 'Sin descripción',
+                imagen: productData['imagen'] ?? '',
+                fechaCreacion: DateTime.parse(
+                  productData['fecha'] ?? DateTime.now().toString(),
+                ),
+                genero: productData['genero'] ?? 'Unisex',
+                precio: (productData['precio'] as num?)?.toDouble() ?? 0.0,
+                para: productData['para'] ?? 'General',
+                idSucursal: productData['id_sucursal'] ?? 0,
+                idCategoria: productData['id_categoria'] ?? 0,
+                bannerProducto: productData['banner'] ?? '',
+                promedioCalificacion:
+                    (productData['promedio_calificacion'] as num?)
+                        ?.toDouble() ??
+                    0.0,
+              );
+              //return _buildProductCard(products[index]);
+              return FadeIn(child: CardVertical(producto: producto));
+            },
           ),
         ),
       ],
@@ -274,127 +317,70 @@ class _ImageSearchResultsState extends State<ImageSearchResults> {
         height: 150,
         width: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          height: 150,
-          color: Colors.grey[200],
-          child: const Center(
-            child: Icon(Icons.error, color: Colors.red),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductCard(Map<String, dynamic> product) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                color: Colors.grey[200],
-              ),
-              child: Center(
-                child: product['imagen'] != null
-                    ? Image.network(
-                        'http://192.168.0.5:8000/img/productos/${product['imagen']}',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                      )
-                    : const Icon(Icons.shopping_bag, size: 50),
-              ),
+        errorBuilder:
+            (context, error, stackTrace) => Container(
+              height: 150,
+              color: Colors.grey[200],
+              child: const Center(child: Icon(Icons.error, color: Colors.red)),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product['nombre'] ?? 'Sin nombre',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '\$${product['precio']?.toStringAsFixed(2) ?? '0.00'}',
-                  style: TextStyle(
-                    color: Colors.green[700],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  product['descripcion'] ?? 'Sin descripción',
-                  style: const TextStyle(fontSize: 12),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
 }
 
-
-
 // Los widgets _NotificationButton y _LocationButton permanecen igual
 
-class _NotificationButton extends StatelessWidget {
+class _IconsButonsCustom extends StatelessWidget {
+  final IconData icon;
+  final OnTapCallback onTap;
+  final int cantidad;
+
+  const _IconsButonsCustom({
+    required this.icon,
+    required this.onTap,
+    required this.cantidad,
+  });
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(100),
-        onTap: () {},
+        onTap: onTap,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(2),
-              child: Icon(PhosphorIconsRegular.bell, size: 24),
+            Padding(
+              padding: const EdgeInsets.all(2),
+              child: Icon(icon, size: 24),
             ),
-            Positioned(
-              right: 0,
-              top: -2,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 199, 57, 47),
-                  shape: BoxShape.circle,
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: const Center(
-                  child: Text(
-                    '3',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+            if (cantidad > 0)
+              Positioned(
+                right: 0,
+                top: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 199, 57, 47),
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$cantidad',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -402,19 +388,4 @@ class _NotificationButton extends StatelessWidget {
   }
 }
 
-class _LocationButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(100),
-        onTap: () {},
-        child: const Padding(
-          padding: EdgeInsets.all(2),
-          child: Icon(PhosphorIconsRegular.mapPin, size: 24),
-        ),
-      ),
-    );
-  }
-}
+typedef OnTapCallback = void Function();

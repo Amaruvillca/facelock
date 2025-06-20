@@ -22,6 +22,13 @@ return ProductoNotifierProvider(
 );
 });
 
+final getSimilaresProvider = StateNotifierProvider<ProductoNotifierProvider,List<Producto>>((ref){
+  final fetchMoreProducto = ref.watch(productoREpositorioProvider).getSimilares;
+return ProductoNotifierProvider(
+  fetchProductos:fetchMoreProducto,
+);
+});
+
 typedef ProductoCallback = Future<List<Producto>> Function({int page});
 class ProductoNotifierProvider extends StateNotifier<List<Producto>>{
 int currentPage = 0;
@@ -43,5 +50,17 @@ Future<void> loadNextPage() async {
   await Future.delayed(const Duration(milliseconds: 300));
   isLoading = false;
 }
+Future<void> loadSimilar(int idProducto) async {
+  if(isLoading) return;
+  print('Loading similar products');
+
+  isLoading = true;
+  
+  final List<Producto> movies = await fetchProductos(page: idProducto);
+  state = [...movies];
+  await Future.delayed(const Duration(milliseconds: 300));
+  isLoading = false;
+}
 
 }
+

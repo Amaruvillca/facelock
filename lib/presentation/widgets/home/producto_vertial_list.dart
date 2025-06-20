@@ -1,21 +1,24 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:facelock/config/constants/enviroment.dart';
 import 'package:facelock/domain/entities/producto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ProductoVerticalList extends ConsumerStatefulWidget {
   const ProductoVerticalList({
-    super.key, 
-    required this.producto, 
+    super.key,
+    required this.producto,
     this.loadNextPage,
   });
-  
+
   final List<Producto> producto;
   final Future<void> Function()? loadNextPage;
 
   @override
-  ConsumerState<ProductoVerticalList> createState() => _ProductoVerticalListState();
+  ConsumerState<ProductoVerticalList> createState() =>
+      _ProductoVerticalListState();
 }
 
 class _ProductoVerticalListState extends ConsumerState<ProductoVerticalList> {
@@ -37,9 +40,9 @@ class _ProductoVerticalListState extends ConsumerState<ProductoVerticalList> {
 
   void _onScroll() {
     if (_isLoading || widget.loadNextPage == null) return;
-    
+
     // Trigger load when 300px from bottom
-    if (_scrollController.position.pixels + 300 >= 
+    if (_scrollController.position.pixels + 300 >=
         _scrollController.position.maxScrollExtent) {
       _loadMore();
     }
@@ -47,7 +50,7 @@ class _ProductoVerticalListState extends ConsumerState<ProductoVerticalList> {
 
   Future<void> _loadMore() async {
     if (_isLoading) return;
-    
+
     setState(() => _isLoading = true);
     try {
       await widget.loadNextPage!();
@@ -98,7 +101,7 @@ class _ProductoVerticalListState extends ConsumerState<ProductoVerticalList> {
 
 class CardVertical extends StatefulWidget {
   const CardVertical({
-    super.key, 
+    super.key,
     required this.producto,
     this.placeholderAsset = 'assets/gif3.gif',
   });
@@ -115,7 +118,7 @@ class _CardVerticalState extends State<CardVertical> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print('click en ${widget.producto.idProducto}');
+        context.push('/home/detalleproducto/${widget.producto.idProducto}');
       },
       child: Container(
         decoration: BoxDecoration(
@@ -135,20 +138,31 @@ class _CardVerticalState extends State<CardVertical> {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: FadeInImage(
-                  placeholder: AssetImage(widget.placeholderAsset),
-                  image: NetworkImage(
-                    '${Environment.urlBase}/img/productos/${widget.producto.imagen}',
-                  ),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl:
+                      '${Environment.urlBase}/img/productos/${widget.producto.imagen}',
                   fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 300),
-                  imageErrorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      widget.placeholderAsset,
-                      fit: BoxFit.cover,
-                    );
-                  },
+
+                  // Placeholder mientras descarga
+                  placeholder:
+                      (_, __) => Image.asset(
+                        widget.placeholderAsset,
+                        fit: BoxFit.cover,
+                      ),
+
+                  // Imagen de error si falla la carga
+                  errorWidget:
+                      (_, __, ___) => Image.asset(
+                        widget.placeholderAsset,
+                        fit: BoxFit.cover,
+                      ),
+
+                  // Si quieres limitar la resolución decodificada (opcional):
+                  // memCacheWidth: 600,
+                  // memCacheHeight: 600,
                 ),
               ),
             ),

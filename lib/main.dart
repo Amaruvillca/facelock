@@ -25,7 +25,6 @@ class MainApp extends StatelessWidget {
       title: 'FaceLock',
       debugShowCheckedModeBanner: false,
       theme: AppTheme().getTheme(),
-      
     );
   }
 }

@@ -51,6 +51,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         context.go('/welcome', extra: {
           'isNewUser': true,
           'email': userCredential.user?.email,
+          'provider': 'Email',
+          'uid':userCredential.user?.uid,
         });
       }
     } on FirebaseAuthException catch (e) {
@@ -92,6 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'isNewUser': true,
             'email': authResult.user?.email,
             'provider': 'google',
+            'uid':authResult.user?.uid,
           });
         }
       } else {
