@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:facelock/config/constants/enviroment.dart';
+import 'package:facelock/domain/entities/producto_carrito.dart';
+import 'package:facelock/presentation/provider/producto_carrito/producto_carrito_provider.dart';
 import 'package:facelock/presentation/provider/productos/producto_providers.dart';
 import 'package:facelock/presentation/widgets/home/producto_horizontal_list.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:facelock/presentation/provider/productos/detalle_producto_provider.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:latlong2/latlong.dart';
 
 class DetalleProductoScreen extends ConsumerStatefulWidget {
@@ -29,13 +32,12 @@ class _DetalleProductoScreenState extends ConsumerState<DetalleProductoScreen> {
     super.initState();
 
     Future.microtask(() {
-      ref.read(productoDetalleProvider.notifier).loadProducto(widget.idProducto);
-      ref.read(getSimilaresProvider.notifier).loadSimilar(widget.idProducto);
+      ref.read(productoDetalleProvider.notifier).loadProducto(53);
+      ref.read(getSimilaresProvider.notifier).loadSimilar(53);
     });
 
     //_loadInitialData();
   }
-  
 
   @override
   void dispose() {
@@ -65,7 +67,11 @@ class _DetalleProductoScreenState extends ConsumerState<DetalleProductoScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
 
-      bottomNavigationBar: _BottomBar(productoAsync: productoAsync),
+      bottomNavigationBar: _BottomBar(
+        productoAsync: productoAsync,
+        selectedColorIndex: selectedColorIndex,
+        selectedSizeIndex: selectedSizeIndex,
+      ),
       body: productoAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text("Error: $error")),
@@ -440,7 +446,10 @@ class _DetalleProductoScreenState extends ConsumerState<DetalleProductoScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ProductoHorizontalList(productos: similarAsync, scrol: "similares"),
+                    ProductoHorizontalList(
+                      productos: similarAsync,
+                      scrol: "similares",
+                    ),
                     const SizedBox(height: 24),
                   ]),
                 ),
@@ -453,13 +462,26 @@ class _DetalleProductoScreenState extends ConsumerState<DetalleProductoScreen> {
   }
 }
 
-class _BottomBar extends StatelessWidget {
+class _BottomBar extends ConsumerStatefulWidget {
   final AsyncValue<dynamic> productoAsync;
+  final int selectedColorIndex;
+  final int selectedSizeIndex;
 
-  const _BottomBar({required this.productoAsync});
+  const _BottomBar({
+    required this.productoAsync,
+    required this.selectedColorIndex,
+    required this.selectedSizeIndex,
+  });
 
   @override
+  ConsumerState<_BottomBar> createState() => _BottomBarState();
+}
+
+class _BottomBarState extends ConsumerState<_BottomBar> {
+  int counter = 1;
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -474,7 +496,7 @@ class _BottomBar extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: productoAsync.when(
+        child: widget.productoAsync.when(
           loading:
               () => const SizedBox(
                 height: 56,
@@ -494,15 +516,25 @@ class _BottomBar extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.remove),
-                          onPressed: () {},
+                          onPressed: () {
+                            if (counter > 1) {
+                              setState(() {
+                                counter--;
+                              });
+                            }
+                          },
                         ),
-                        const Text(
-                          '1',
+                        Text(
+                          '$counter',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           icon: const Icon(Icons.add),
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              counter++;
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -511,7 +543,77 @@ class _BottomBar extends StatelessWidget {
                   // Botón principal
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        final producto = widget.productoAsync.value!;
+                        final colorSeleccionado =
+                            producto.colores[widget.selectedColorIndex];
+                        final tallaSeleccionada =
+                            colorSeleccionado.tallas[widget.selectedSizeIndex];
+
+                        final carritoItem = ProductoCarrito(
+                          fechaAnadido: DateTime.now(),
+                          cantidad: counter,
+                          talla: tallaSeleccionada.talla,
+                          precioUnitario: producto.precio,
+                          precioTotal: producto.precio * counter,
+                          idColorProducto: colorSeleccionado.idColorProducto,
+                        );
+
+                        // Llama al notifier usando ref
+                        ref
+                            .read(carritoProvider.notifier)
+                            .agregarProducto(carritoItem);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                Icon(
+                                  Iconsax.shopping_cart,
+                                  color: theme.colorScheme.onPrimary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Producto añadido al carrito',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            backgroundColor: theme.colorScheme.primary,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.all(16),
+                            elevation: 4,
+                            duration: const Duration(seconds: 2),
+                            dismissDirection: DismissDirection.horizontal,
+                            animation: CurvedAnimation(
+                              parent: AnimationController(
+                                duration: const Duration(milliseconds: 300),
+                                vsync: Scaffold.of(context),
+                              ),
+                              curve: Curves.easeOutCubic,
+                            ),
+                            action: SnackBarAction(
+                              label: 'Ver',
+                              textColor: theme.colorScheme.onPrimary.withOpacity(0.8),
+                              onPressed: () {
+                                // Navegar al carrito
+                                
+                              },
+                            ),
+                          ),
+                        );
+                        setState(() {
+                          counter = 1;
+                        });
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,

@@ -3,7 +3,7 @@ class Categoria {
   final String nombre;
   final String descripcion;
   final String imagen;
-  final int estado;
+  final bool estado;
 
   Categoria({
     required this.idCategoria,

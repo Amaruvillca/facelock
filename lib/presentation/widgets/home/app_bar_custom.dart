@@ -172,15 +172,21 @@ class _ImageSearchResultsState extends State<ImageSearchResults> {
         'file': await MultipartFile.fromFile(imagePath),
       });
 
-      final dio = Dio();
-      final response = await dio.post(
-        '${Environment.urlBase}/comparar-imagenes',
-        data: formData,
-        options: Options(
-          sendTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
-        ),
-      );
+  final dio = Dio();
+  final response = await dio.post(
+    '${Environment.urlBase}/comparar-imagenes',
+    data: formData,
+    options: Options(
+      headers: {
+        "X-API-Name": Environment.xApiName,
+        "X-API-Version": Environment.xApiVersion,
+        "X-Developed-By": Environment.xDevelopedBy,
+        "X-Code": Environment.xCode
+      },
+      sendTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ),
+  );
 
       if (response.statusCode != 200) {
         throw Exception('Error en la respuesta del servidor');

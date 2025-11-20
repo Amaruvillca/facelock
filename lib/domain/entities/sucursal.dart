@@ -10,7 +10,7 @@ class Sucursal {
   final String ciudad;
   final double latitud;
   final double longitud;
-  final int estado;
+  final bool estado;
 
   Sucursal({
     required this.idSucursal,

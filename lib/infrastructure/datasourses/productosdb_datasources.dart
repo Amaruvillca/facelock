@@ -7,7 +7,13 @@ import 'package:facelock/infrastructure/mapper/producto_mapper.dart';
 import 'package:facelock/infrastructure/models/productosresponce/producto_response.dart';
 
 class ProductosdbDatasources extends ProductosDatasources {
-  final dio = Dio(BaseOptions(baseUrl: '${Environment.urlBase}/productos'));
+  final dio = Dio(BaseOptions(baseUrl: '${Environment.urlBase}/productos',
+  headers: {
+            "X-API-Name": Environment.xApiName,
+            "X-API-Version": Environment.xApiVersion,
+            "X-Developed-By": Environment.xDevelopedBy,
+            "X-Code": Environment.xCode
+  }));
   List<Producto> _jsonToProducto(Map<String, dynamic> json) {
     final productoDBresponse = ProductoResponse.fromJson(json);
     final List<Producto> productos =

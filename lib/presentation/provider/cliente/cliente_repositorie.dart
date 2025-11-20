@@ -3,5 +3,5 @@ import 'package:facelock/infrastructure/repositories/clientes_repositorie_imp.da
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final clienteREpositorioProvider = Provider((ref){
-  return ClientesRepositorieImp(ClientesdbDatasourses());
+  return ClientesRepositorieImp(ClientesdbDatasourses(ref));
 });

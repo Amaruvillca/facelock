@@ -9,14 +9,16 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
-class RegistrarBiometria extends StatefulWidget {
-  const RegistrarBiometria({Key? key}) : super(key: key);
+class VerificacionBiometricaScreen extends StatefulWidget {
+  const VerificacionBiometricaScreen({super.key});
 
   @override
-  _RegistrarBiometriaState createState() => _RegistrarBiometriaState();
+  State<VerificacionBiometricaScreen> createState() =>
+      _VerificacionBiometricaScreenState();
 }
 
-class _RegistrarBiometriaState extends State<RegistrarBiometria> {
+class _VerificacionBiometricaScreenState
+    extends State<VerificacionBiometricaScreen> {
   String? _userUid;
   late CameraController _controller;
   late Future<void> _initializeController;
@@ -34,7 +36,7 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
     // Ocultar barra de estado y navegación
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _getCurrentUserUid().then((_) => _initializeCamera());
-    
+
     // Ocultar mensaje de ayuda después de 5 segundos
     _helpMessageTimer = Timer(const Duration(seconds: 5), () {
       if (mounted) {
@@ -58,10 +60,12 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
       if (user != null) {
         setState(() => _userUid = user.uid);
       } else {
-        setState(() => _errorMessage = '🔐 Debes iniciar sesión para registrar tu biometría');
+        setState(() =>
+            _errorMessage = '🔐 Debes iniciar sesión para verificar tu biometría');
       }
     } catch (e) {
-      setState(() => _errorMessage = '⚠️ Error al verificar tu cuenta: ${e.toString()}');
+      setState(() =>
+          _errorMessage = '⚠️ Error al verificar tu cuenta: ${e.toString()}');
     }
   }
 
@@ -92,14 +96,15 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
       await _controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = '📷 Error al iniciar la cámara: ${e.toString()}');
+        setState(() =>
+            _errorMessage = '📷 Error al iniciar la cámara: ${e.toString()}');
       }
     }
   }
 
-  Future<void> _captureBiometricData() async {
+  Future<void> _verifyBiometricData() async {
     if (_isProcessing || !_isCameraReady || _userUid == null) return;
-    
+
     setState(() {
       _isProcessing = true;
       _result = null;
@@ -113,20 +118,14 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('${Environment.urlBase}/clientes/verificar-imagen/$_userUid'),
+        Uri.parse('${Environment.urlBase}/clientes/comparar-imagen/$_userUid'),
       )
-      ..files.add(http.MultipartFile.fromBytes(
-        'imagen',
-        bytes,
-        filename: 'biometria_${DateTime.now().millisecondsSinceEpoch}.jpg',
-        contentType: MediaType('image', 'jpeg'),
-      ))
-      ..files.add(http.MultipartFile.fromBytes(
-        'imagen2',
-        bytes,
-        filename: 'biometria_${DateTime.now().millisecondsSinceEpoch}.jpg',
-        contentType: MediaType('image', 'jpeg'),
-      ))..headers.addAll(
+        ..files.add(http.MultipartFile.fromBytes(
+          'imagen',
+          bytes,
+          filename: 'biometria_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ))..headers.addAll(
         {
           "X-API-Name": Environment.xApiName,
           "X-API-Version": Environment.xApiVersion,
@@ -144,11 +143,13 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
       if (response.statusCode == 200) {
         setState(() => _result = jsonResponse);
       } else {
-        setState(() => _errorMessage = jsonResponse['detail'] ?? '❌ Error en el registro biométrico');
+        setState(() =>
+            _errorMessage = jsonResponse['detail'] ?? '❌ Error en la verificación biométrica');
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = '⚠️ Error al conectar con el servidor: ${e.toString()}');
+        setState(() =>
+            _errorMessage = '⚠️ Error al conectar con el servidor: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -163,11 +164,8 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Fondo negro
-          //Container(color: Colors.black),
-          
-          // Vista de la cámara en 9:16
-          _buildCamera9x16(),
+          // Vista de la cámara a pantalla completa
+          _buildFullScreenCamera(),
 
           // AppBar transparente
           //_buildTransparentAppBar(),
@@ -176,7 +174,7 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
           _buildCaptureGuidelines(),
 
           // Mensaje de ayuda flotante
-          if (_showHelpMessage && _userUid != null && _isCameraReady) 
+          if (_showHelpMessage && _userUid != null && _isCameraReady)
             _buildFloatingHelpMessage(),
 
           // Indicador de procesamiento
@@ -188,14 +186,17 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
           if (_userUid == null) _buildAuthErrorOverlay(),
 
           // Botón de captura
-          if (_userUid != null && !_isProcessing && _result == null && _errorMessage == null)
+          if (_userUid != null &&
+              !_isProcessing &&
+              _result == null &&
+              _errorMessage == null)
             _buildCaptureButton(),
         ],
       ),
     );
   }
 
-  Widget _buildCamera9x16() {
+  Widget _buildFullScreenCamera() {
     if (_errorMessage != null) {
       return Container(color: Colors.black);
     }
@@ -244,7 +245,7 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Registro Biométrico Facial',
+          'Verificación Biométrica Facial',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -252,7 +253,7 @@ class _RegistrarBiometriaState extends State<RegistrarBiometria> {
     );
   }
 
-Widget _buildCaptureGuidelines() {
+ Widget _buildCaptureGuidelines() {
   final width = MediaQuery.of(context).size.width * 0.7;
   final height = MediaQuery.of(context).size.width * 1;
 
@@ -332,10 +333,9 @@ Widget _buildCaptureGuidelines() {
   );
 }
 
-
   Widget _buildFloatingHelpMessage() {
     return Positioned(
-      bottom: MediaQuery.of(context).size.height * 0.25, // Ajustado para la nueva disposición
+      bottom: 120,
       left: 20,
       right: 20,
       child: AnimatedOpacity(
@@ -352,7 +352,6 @@ Widget _buildCaptureGuidelines() {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.lightbulb_outline, color: Colors.yellow, size: 24),
-              SizedBox(height: 8),
               Text(
                 'Consejo: Asegúrate de tener buena iluminación y quitar accesorios como lentes o gorras',
                 style: TextStyle(color: Colors.white, fontSize: 14),
@@ -375,7 +374,7 @@ Widget _buildCaptureGuidelines() {
           ),
           SizedBox(height: 16),
           Text(
-            'Analizando tu rostro...',
+            'Verificando tu identidad...',
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
           SizedBox(height: 8),
@@ -389,7 +388,7 @@ Widget _buildCaptureGuidelines() {
   }
 
   Widget _buildResultOverlay() {
-    final bool isSuccess = _result?['valido'] == true;
+    final bool isSuccess = _result?['match'] == true;
     final String message = _result?['mensaje'] ?? '';
 
     return Positioned.fill(
@@ -412,7 +411,7 @@ Widget _buildCaptureGuidelines() {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  isSuccess ? '✅ Registro exitoso' : '⚠️ Atención',
+                  isSuccess ? '✅ Verificación exitosa' : '⚠️ Verificación fallida',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -432,44 +431,11 @@ Widget _buildCaptureGuidelines() {
                   ),
                 ),
                 const SizedBox(height: 30),
-                if (_result?['detalles'] != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(10)),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Detalles del análisis:',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        if (_result?['detalles']['accesorios']?['lentes'] == true)
-                          _buildDetailItem('👓 Lentes detectados', 'Recomendamos quitarlos para mejor precisión'),
-                        if (_result?['detalles']['accesorios']?['gorra_sombrero'] == true)
-                          _buildDetailItem('🧢 Accesorio en cabeza', 'Quítalo para una identificación óptima'),
-                        if (_result?['detalles']['calidad']?['iluminacion'] == 'baja')
-                          _buildDetailItem('💡 Poca iluminación', 'Busca un lugar mejor iluminado'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {
-                          if(!isSuccess) {
-                            return Navigator.pop(context);
-                          }
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
+                        onPressed: () => Navigator.pop(context, isSuccess),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
                           side: const BorderSide(color: Colors.white),
@@ -479,25 +445,27 @@ Widget _buildCaptureGuidelines() {
                       ),
                     ),
                     const SizedBox(width: 15),
-                    if(!isSuccess) Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => setState(() {
-                          _result = null;
-                          _showHelpMessage = true;
-                          _helpMessageTimer = Timer(const Duration(seconds: 5), () {
-                            if (mounted) {
-                              setState(() => _showHelpMessage = false);
-                            }
-                          });
-                        }),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                    if (!isSuccess)
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => setState(() {
+                            _result = null;
+                            _showHelpMessage = true;
+                            _helpMessageTimer = Timer(const Duration(seconds: 5),
+                                () {
+                              if (mounted) {
+                                setState(() => _showHelpMessage = false);
+                              }
+                            });
+                          }),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text('REINTENTAR'),
                         ),
-                        child: const Text('REINTENTAR'),
                       ),
-                    ),
                   ],
                 ),
               ],
@@ -522,18 +490,16 @@ Widget _buildCaptureGuidelines() {
               const Text(
                 'Ocurrió un error',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   _errorMessage!,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16),
+                  style: const TextStyle(color: Colors.white70, fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -590,18 +556,16 @@ Widget _buildCaptureGuidelines() {
               const Text(
                 'Acceso requerido',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Para registrar tu biometría facial necesitas iniciar sesión primero',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16),
+                  'Para verificar tu biometría facial necesitas iniciar sesión primero',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -637,14 +601,13 @@ Widget _buildCaptureGuidelines() {
         child: Column(
           children: [
             Text(
-              _isCameraReady ? 'Presiona para capturar' : 'Preparando cámara...',
+              _isCameraReady ? 'Presiona para verificar' : 'Preparando cámara...',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 14),
+                  color: Colors.white.withOpacity(0.8), fontSize: 14),
             ),
             const SizedBox(height: 10),
             GestureDetector(
-              onTap: _captureBiometricData,
+              onTap: _verifyBiometricData,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 width: 70,
@@ -653,8 +616,8 @@ Widget _buildCaptureGuidelines() {
                   shape: BoxShape.circle,
                   color: Colors.transparent,
                   border: Border.all(
-                    color: _isCameraReady ? Colors.white : Colors.grey,
-                    width: 3),
+                      color: _isCameraReady ? Colors.white : Colors.grey,
+                      width: 3),
                 ),
                 child: Container(
                   margin: const EdgeInsets.all(5),
@@ -670,31 +633,4 @@ Widget _buildCaptureGuidelines() {
       ),
     );
   }
-
-  Widget _buildDetailItem(String iconText, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            iconText,
-            style: const TextStyle(fontSize: 24),
-          ),
-          const SizedBox(width: 10),
-          Flexible(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-
-
-

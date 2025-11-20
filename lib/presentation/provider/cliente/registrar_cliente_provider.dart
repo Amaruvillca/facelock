@@ -1,32 +1,28 @@
+import 'package:facelock/domain/entities/clientes.dart';
 import 'package:facelock/domain/repositories/clientes_repositorie.dart';
 import 'package:facelock/infrastructure/datasourses/clientesdb_datasourses.dart';
 import 'package:facelock/infrastructure/repositories/clientes_repositorie_imp.dart';
-import 'package:facelock/presentation/provider/cliente/cliente_repositorie.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final clienteREpositorioProvider = Provider<ClientesRepositorie>((ref) {
   return ClientesRepositorieImp(ClientesdbDatasourses(ref));
 });
 
-final estadoAutenticacionProvider = StateNotifierProvider<EstadoAutenticacionNotifier, bool>((ref) {
+final resgistroCliente = StateNotifierProvider<RegistroClienteNotifier, bool>((ref) {
   final repositorio = ref.watch(clienteREpositorioProvider);
-  return EstadoAutenticacionNotifier(repositorio);
+  return RegistroClienteNotifier(repositorio);
 });
 
-class EstadoAutenticacionNotifier extends StateNotifier<bool> {
+class RegistroClienteNotifier extends StateNotifier<bool> {
   final ClientesRepositorie _repositorio;
 
-  EstadoAutenticacionNotifier(this._repositorio) : super(false);
+  RegistroClienteNotifier(this._repositorio) : super(false);
 
-  Future<void> verificarEstadoBiometrico(String uid) async {
-    if (uid.isEmpty) {
-      state = false;
-      return;
-    }
-
+  Future<void> registrarCliente(Clientes cliente) async {
     try {
-      final tieneBiometria = await _repositorio.getEstadoAutentificacion(uid: uid);
-      state = tieneBiometria;
+      final exito = await _repositorio.registrarCliente(cliente: cliente);
+      state = exito;
     } catch (e) {
       // Manejo de errores
       state = false;

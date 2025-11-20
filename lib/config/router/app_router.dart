@@ -37,6 +37,10 @@ final appRouter = GoRouter(
           path: 'mapa', // Nota: no lleva '/' al inicio porque es ruta hija
           builder: (context, state) => const MapaScreen(),
         ),
+        GoRoute(
+          path: 'verificacionbiometrica', // Nota: no lleva '/' al inicio porque es ruta hija
+          builder: (context, state) => const VerificacionBiometricaScreen(),
+        ),
         // Otras rutas hijas de home pueden ir aquí
       ],
     ),

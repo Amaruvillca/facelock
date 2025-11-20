@@ -1,9 +1,10 @@
-export 'movies/login_screen.dart';
-export 'movies/home_screen.dart';
-export 'movies/register_screen.dart';
-export 'movies/search_results_screen.dart';
-export 'movies/welcome_screen.dart';
-export 'movies/detalle_producto_screen.dart';
+export 'productos/login_screen.dart';
+export 'productos/home_screen.dart';
+export 'productos/register_screen.dart';
+export 'productos/search_results_screen.dart';
+export 'productos/welcome_screen.dart';
+export 'productos/detalle_producto_screen.dart';
 export 'perfil/registro_biometrico.dart';
 export 'sucursales/map_screen.dart';
 export 'perfil/registrar_biometria.dart';
+export 'productos/verificacion_biometrica_screen.dart';
