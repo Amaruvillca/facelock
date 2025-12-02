@@ -2,9 +2,9 @@ class Sucursal {
   final int idSucursal;
   final String nombre;
   final String direccion;
-  final String imagen1;
-  final String imagen2;
-  final String imagen3;
+  final String? imagen1;
+  final String? imagen2;
+  final String? imagen3;
   final int telefono;
   final DateTime fechaApertura;
   final String ciudad;
@@ -16,9 +16,9 @@ class Sucursal {
     required this.idSucursal,
     required this.nombre,
     required this.direccion,
-    required this.imagen1,
-    required this.imagen2,
-    required this.imagen3,
+    this.imagen1,
+    this.imagen2,
+    this.imagen3,
     required this.telefono,
     required this.fechaApertura,
     required this.ciudad,
@@ -38,9 +38,31 @@ class Sucursal {
       telefono: json['telefono'],
       fechaApertura: DateTime.parse(json['fecha_apertura']),
       ciudad: json['ciudad'],
-      latitud: json['latitud'].toDouble(),
-      longitud: json['longitud'].toDouble(),
+      latitud: json['latitud'],
+      longitud: json['longitud'],
       estado: json['estado'],
+    );
+  }
+}
+
+class SucursalResponse {
+  final String message;
+  final List<Sucursal> data;
+
+  SucursalResponse({
+    required this.message,
+    required this.data,
+  });
+
+  factory SucursalResponse.fromJson(Map<String, dynamic> json) {
+    var dataList = json['data'] as List;
+    List<Sucursal> sucursales = dataList
+        .map((item) => Sucursal.fromJson(item))
+        .toList();
+
+    return SucursalResponse(
+      message: json['message'],
+      data: sucursales,
     );
   }
 }

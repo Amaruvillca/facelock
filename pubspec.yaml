@@ -29,6 +29,7 @@ dependencies:
   go_router: ^15.1.1
   google_fonts: ^6.2.1
   google_sign_in: ^6.3.0
+  http: ^1.1.0
   iconsax: ^0.0.8
   image_picker: ^1.1.2
   intl: ^0.20.2
@@ -38,6 +39,8 @@ dependencies:
   shared_preferences: ^2.5.3
   shimmer: ^3.0.0
   sqflite: ^2.4.2
+  url_launcher: ^6.3.2
+  visibility_detector: ^0.4.0+2
 
 dev_dependencies:
   flutter_lints: ^5.0.0

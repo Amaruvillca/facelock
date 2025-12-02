@@ -36,7 +36,7 @@ class CardProducto extends StatelessWidget {
             Container(
               height: 180,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: const Color.fromARGB(255, 255, 255, 255),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
@@ -47,21 +47,25 @@ class CardProducto extends StatelessWidget {
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
                 ),
-                child: CachedNetworkImage(
-                  imageUrl:
-                      '${Environment.urlBase}/img/productos/${producto.imagen}',
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) =>
-                          Image.asset('assets/gif3.gif', fit: BoxFit.cover),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color: Colors.grey[200],
-                        child: Icon(
-                          Icons.broken_image,
-                          color: Colors.grey[400],
+                child: Center(
+                  child: CachedNetworkImage(
+                    imageUrl:
+                        '${Environment.urlBase}/img/productos/${producto.imagen}',
+                    fit: BoxFit.cover,
+                    placeholder:
+                        (context, url) =>
+                            Image.asset('assets/gif3.gif', fit: BoxFit.cover),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          color: Colors.grey[200],
+                          child: Image.asset(
+                            'assets/gif3.gif',
+                            fit: BoxFit.cover,
+                            height: 700,
+                            width: 700,
+                          ),
                         ),
-                      ),
+                  ),
                 ),
               ),
             ),

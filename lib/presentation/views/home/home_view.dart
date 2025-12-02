@@ -86,53 +86,58 @@ class HomeViewState extends ConsumerState<HomeView> with AutomaticKeepAliveClien
     final mejorCali = ref.watch(getMejoresCalificadasProvider);
     final productos = ref.watch(getProductosProvider);
 
-
     if (!_initialLoadCompleted) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return CustomScrollView(
-      controller: _scrollController,
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        const SliverAppBar(
-          pinned: false,
-          floating: true,
-          snap: true,
-          elevation: 1,
-          title: AppbarCustom(),
-        ),
-        SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              _HorizontalBanner(),
-              _SectionTitle('Categorías'),
-              CategoryList(),
-              _SectionTitle('Nuevas llegadas'),
-             ProductoHorizontalList(productos: recientePro, scrol: "recientes"),
-              _SectionTitle('Tendencias'),
-             ProductoHorizontalList(productos: mejorCali, scrol: "tedencias"),
-              _SectionTitle('Anuncios'),
-             //LuxuryFashionSlider(),
-              _SectionTitle('Más Productos'),
-              const SizedBox(height: 40),
-            ],
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() => _initialLoadCompleted = false);
+        await _loadInitialData();
+      },
+      child: CustomScrollView(
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          const SliverAppBar(
+            pinned: false,
+            floating: true,
+            snap: true,
+            elevation: 1,
+            title: AppbarCustom(),
           ),
-        ),
-        _ProductGrid(productos: productos),
-        if (_isLoadingMore)
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Center(child: CircularProgressIndicator()),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                _HorizontalBanner(),
+                _SectionTitle('Categorías'),
+                CategoryList(),
+                _SectionTitle('Nuevas llegadas'),
+                ProductoHorizontalList(productos: recientePro, scrol: "recientes"),
+                _SectionTitle('Tendencias'),
+                ProductoHorizontalList(productos: mejorCali, scrol: "tedencias"),
+                _SectionTitle('Anuncios'),
+                LuxuryFashionSlider(),
+                _SectionTitle('Más Productos'),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
-        const SliverToBoxAdapter(child: SizedBox(height: 40)),
-      ],
+          _ProductGrid(productos: productos),
+          if (_isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+        ],
+      ),
     );
   }
 
