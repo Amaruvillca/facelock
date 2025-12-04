@@ -8,6 +8,7 @@ import 'package:facelock/presentation/provider/search/busqueda_producto_provider
 import 'package:facelock/presentation/widgets/home/producto_vertial_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:dio/dio.dart';
@@ -68,7 +69,9 @@ class AppbarCustom extends ConsumerWidget {
 
         _IconsButonsCustom(
           icon: PhosphorIconsRegular.package,
-          onTap: () {},
+          onTap: () {
+            context.push('/detalle-envio');
+          },
           cantidad: 5,
         ),
         const SizedBox(width: 10),

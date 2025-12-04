@@ -1,3 +1,4 @@
+import 'package:facelock/presentation/screens/productos/detalle_envio_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:facelock/presentation/screens/screens.dart';
 
@@ -63,6 +64,12 @@ final appRouter = GoRouter(
       builder:
           (context, state) =>
               WelcomeScreen(userData: state.extra as Map<String, dynamic>),
+    ),
+    GoRoute(
+      path: '/detalle-envio',
+      builder: (context, state) {
+        return const DetalleEnvioProducto();
+      },
     ),
   ],
 );
